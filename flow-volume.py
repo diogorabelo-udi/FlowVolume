@@ -7,27 +7,25 @@ from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
 # =====================================================================
 # 1. CONEXÃO DIRETA COM O DISPOSITIVO MASTER DE ÁUDIO 
 # =====================================================================
-# Acessa o gerenciador de dispositivos de som do Windows
+
+
 gerenciador_dispositivos = AudioUtilities.GetDeviceEnumerator()
 
-# Pega o alto-falante padrão de saída de áudio do sistema
+
 alto_falante_padrao = gerenciador_dispositivos.GetDefaultAudioEndpoint(0, 1)
 
-# Ativa o controle de volume master direto desse alto-falante
 interface = alto_falante_padrao.Activate(
     IAudioEndpointVolume._iid_, 23, None
 )
 
-# Pronto! Esta variável agora controla a barra geral de som do Windows
 volume_master = interface.QueryInterface(IAudioEndpointVolume)
 
-# No volume master real do Windows, a escala vai de 0.0 (mudo) até 1.0 (máximo)
 vol_min, vol_max = 0.0, 1.0
 
 # =====================================================================
 # 2. CONFIGURAÇÃO DA WEBCAM E DA IA (CVZONE)
 # =====================================================================
-webcam = cv2.VideoCapture(0)
+webcam = cv2.VideoCapture(0)controla
 detector_ia = HandDetector(maxHands=1, detectionCon=0.7)
 
 print("--- SISTEMA INICIADO COM SUCESSO! ---")
@@ -49,7 +47,6 @@ while webcam.isOpened():
         mao_detectada = maos[0]
         lista_pontos = mao_detectada["lmList"]
         
-        # Pontos do Dedão (4) e Indicador (8)
         x1, y1 = lista_pontos[4][0], lista_pontos[4][1]
         x2, y2 = lista_pontos[8][0], lista_pontos[8][1]
         
@@ -60,12 +57,10 @@ while webcam.isOpened():
         
         distancia = math.hypot(x2 - x1, y2 - y1)
         
-        # Converte a distância para a escala real do hardware do Windows (0.0 a 1.0)
         volume_final = np.interp(distancia, [20, 180], [vol_min, vol_max])
         barra_visual = np.interp(distancia, [20, 180], [400, 150])
         porcentagem = np.interp(distancia, [20, 180], [0, 100])
         
-        # MODIFICAÇÃO DO VOLUME REAL DO SISTEMA OPERACIONAL
         volume_master.SetMasterVolumeLevelScalar(volume_final, None)
         
         if distancia < 25:
